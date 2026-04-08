@@ -319,41 +319,6 @@
   async
   type="text/javascript">
 </script>
-<style>
-  /* Chatbase arriba */
-  iframe[src*="chatbase"],
-  div[id*="chatbase"] {
-    z-index: 99999 !important;
-    position: fixed !important;
-  }
 
-  /* Vapi abajo */
-  vapi-widget,
-  iframe[src*="vapi"],
-  div[id*="vapi"] {
-    z-index: 1 !important;
-  }
-</style>
-<script>
-  function elevarChatbase() {
-    // Subir Chatbase
-    document.querySelectorAll('iframe').forEach(el => {
-      if (el.src.includes('chatbase')) {
-        el.style.zIndex = '999999';
-        el.style.position = 'fixed';
-      }
-    });
-
-    // Bajar Vapi (forzar contenedor real)
-    const vapi = document.querySelector('vapi-widget');
-    if (vapi) {
-      vapi.style.zIndex = '1';
-      vapi.style.position = 'fixed';
-    }
-  }
-
-  // Ejecutar varias veces porque cargan dinámico
-  setInterval(elevarChatbase, 1000);
-</script>
 </body>
 </html>
