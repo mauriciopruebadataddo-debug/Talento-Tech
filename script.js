@@ -127,77 +127,120 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     /* =========================================
-       5. Chatbot Logic
+       4.5 Formulario Inscripción
        ========================================= */
-    const chatbotTrigger = document.getElementById('chatbotTrigger');
-    const chatbotWindow = document.getElementById('chatbotWindow');
-    const closeChatbot = document.getElementById('closeChatbot');
-    const chatbotBody = document.getElementById('chatbotBody');
-    const chatInput = document.getElementById('chatInput');
-    const sendChat = document.getElementById('sendChat');
+    const formInscripcion = document.getElementById('formInscripcion');
+    if (formInscripcion) {
+        formInscripcion.addEventListener('submit', (e) => {
+            // Prevenimos comportamiento default si queremos que NO recargue la página en lo absoluto,
+            // pero como está apuntando a formspree.io, si prevenimos el default no se enviará el correo.
+            // Para enviar silenciosamente usaríamos fetch. Haré la petición con fetch para que no se salga de la página.
+            e.preventDefault();
+            
+            const btnSubmit = formInscripcion.querySelector('.btn-submit');
+            const originalText = btnSubmit.textContent;
+            btnSubmit.textContent = 'Enviando...';
+            btnSubmit.disabled = true;
 
-    if (chatbotTrigger && chatbotWindow) {
-        // Toggle Chatbot Window
-        chatbotTrigger.addEventListener('click', () => {
-            chatbotWindow.classList.toggle('active');
+            const formData = new FormData(formInscripcion);
+            
+            fetch(formInscripcion.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Accept': 'application/json'
+                }
+            }).then(response => {
+                if (response.ok) {
+                    alert('¡Inscripción exitosa! Te hemos enviado un correo con los siguientes pasos.');
+                    formInscripcion.reset();
+                } else {
+                    alert('Hubo un problema con la inscripción. Por favor intenta de nuevo.');
+                }
+            }).catch(error => {
+                alert('Error de conexión. Intenta nuevamente.');
+            }).finally(() => {
+                btnSubmit.textContent = originalText;
+                btnSubmit.disabled = false;
+            });
         });
+    }
 
-        // Close Chatbot
-        closeChatbot.addEventListener('click', () => {
-            chatbotWindow.classList.remove('active');
-        });
+    /* =========================================
+       5. Supabase Comments Integration
+       ========================================= */
+    
+    // IMPORTANTE: Reemplaza TU_ANON_KEY con la anon key real proporcionada en el panel de Supabase
+    const SUPABASE_URL = 'https://zdukduywjplovfukugfz.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpkdWtkdXl3anBsb3ZmdWt1Z2Z6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNjY5NjYsImV4cCI6MjA4ODk0Mjk2Nn0.kox2OPHfNA0Ruz3E6EBdLWu_ZxrlG1iVmrAz2yVKQiM';
+    
+    let supabase;
+    if (window.supabase) {
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    }
 
-        // Add User Message
-        const addUserMessage = (text) => {
-            const msgDiv = document.createElement('div');
-            msgDiv.classList.add('chat-message', 'user');
-            msgDiv.textContent = text;
-            chatbotBody.appendChild(msgDiv);
-            scrollToBottom();
-        };
+    const formComentario = document.getElementById('formComentario');
+    const btnComentario = document.getElementById('btnComentario');
 
-        // Add Bot Message
-        const addBotMessage = (text) => {
-            const msgDiv = document.createElement('div');
-            msgDiv.classList.add('chat-message', 'bot');
-            msgDiv.textContent = text;
-            chatbotBody.appendChild(msgDiv);
-            scrollToBottom();
-        };
-
-        const scrollToBottom = () => {
-            chatbotBody.scrollTop = chatbotBody.scrollHeight;
-        };
-
-        const handleSendMessage = () => {
-            const text = chatInput.value.trim();
-            if (text !== '') {
-                addUserMessage(text);
-                chatInput.value = '';
-                
-                // Simulate Bot Response with delay
-                setTimeout(() => {
-                    const responses = [
-                        "¡Un asesor se pondrá en contacto contigo muy pronto!",
-                        "Recuerda que nuestros Bootcamps son 100% financiados. ¡No dudes en inscribirte!",
-                        "Si tienes problemas con el formulario, verifica que todos los campos estén llenos.",
-                        "Gracias por escribirnos. ¿En qué más podemos ayudarte hoy?",
-                        "Nuestras clases son virtuales, con instructores expertos en el área."
-                    ];
-                    const randomText = responses[Math.floor(Math.random() * responses.length)];
-                    addBotMessage(randomText);
-                }, 1200);
+    if (formComentario) {
+        formComentario.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (SUPABASE_KEY === 'TU_ANON_KEY') {
+                alert('Falta configurar la key de Supabase');
+                return;
             }
-        };
 
-        // Send on button click
-        sendChat.addEventListener('click', handleSendMessage);
+            const nombre = document.getElementById('nombreComentario').value;
+            const comentario = document.getElementById('textoComentario').value;
 
-        // Send on Enter key
-        chatInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                handleSendMessage();
+            btnComentario.disabled = true;
+            btnComentario.textContent = 'Enviando...';
+
+            try {
+                const { error } = await supabase
+                    .from('comentarios')
+                    .insert([{ nombre, comentario }]);
+
+                if (error) {
+                    console.error('Error de Supabase:', error);
+                    throw error;
+                }
+
+                formComentario.reset();
+                alert('¡Gracias! Tu comentario ha sido enviado exitosamente.');
+            } catch (error) {
+                console.error('Error insertando comentario:', error);
+                alert('Hubo un error al enviar el comentario.');
+            } finally {
+                btnComentario.disabled = false;
+                btnComentario.textContent = 'Comentar';
             }
         });
     }
+
+    // Funcion auxiliar para evitar XSS
+    function esconderHtml(str) {
+        return str.replace(/[&<>'"]/g, 
+            tag => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                "'": '&#39;',
+                '"': '&quot;'
+            }[tag] || tag)
+        );
+    }
+
+    /* =========================================
+       6. Chatbase Reset Chat Session
+       ========================================= */
+    // Limpiamos la memoria del navegador relacionada a chatbase para que cada reload inicie un chat nuevo
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.includes('chatbase')) {
+            localStorage.removeItem(key);
+        }
+    }
+
 });
