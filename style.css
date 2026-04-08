@@ -726,3 +726,10 @@ img {
 .error-text {
     color: #d9534f;
 }
+
+vapi-widget {
+    position: fixed !important;
+    bottom: 110px !important;
+    right: 30px !important;
+    z-index: 9999 !important;
+}
