@@ -286,14 +286,7 @@
     </div>
 
     <script src="script.js"></script>
-    <style>
-  vapi-widget {
-    bottom: 140px !important; /* Esto lo sube 110 píxeles desde el fondo */
-    right: 20px !important;   /* Lo mantiene a la derecha con un pequeño aire */
-    position: fixed !important;
-    z-index: 9999 !important; /* Asegura que esté por encima de todo */
-  }
-</style>
+    
     <!-- VAPI Widget -->
 <vapi-widget
   public-key="f8bea0d1-0fd1-4a7a-9306-7425943d30fb"
@@ -326,5 +319,20 @@
   async
   type="text/javascript">
 </script>
+<style>
+  /* Chatbase arriba */
+  iframe[src*="chatbase"],
+  div[id*="chatbase"] {
+    z-index: 99999 !important;
+    position: fixed !important;
+  }
+
+  /* Vapi abajo */
+  vapi-widget,
+  iframe[src*="vapi"],
+  div[id*="vapi"] {
+    z-index: 1 !important;
+  }
+</style>
 </body>
 </html>
