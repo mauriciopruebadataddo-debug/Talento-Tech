@@ -302,5 +302,38 @@
     <!-- Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="script.js"></script>
+    <!-- VAPI Widget -->
+<vapi-widget
+  public-key="f8bea0d1-0fd1-4a7a-9306-7425943d30fb"
+  assistant-id="c734437b-c55f-4016-93a6-d2a9e5d33dfc"
+  mode="voice"
+  theme="dark"
+  base-bg-color="#000000"
+  accent-color="#14B8A6"
+  cta-button-color="#000000"
+  cta-button-text-color="#ffffff"
+  border-radius="large"
+  size="compact"
+  position="bottom-right"
+  title="TALK WITH AI"
+  start-button-text="Start"
+  end-button-text="End Call"
+  chat-first-message="Hey, How can I help you today?"
+  chat-placeholder="Type your message..."
+  voice-show-transcript="true"
+  consent-required="true"
+  consent-title="Terms and conditions"
+  consent-content="By clicking &quot;Agree,&quot; and each time I interact with this AI agent, I consent to the recording, storage, and sharing of my communications with third-party service providers, and as otherwise described in our Terms of Service."
+  consent-storage-key="vapi_widget_consent"
+> 
+</vapi-widget>
+
+<!-- VAPI Script -->
+<script
+  src="https://unpkg.com/@vapi-ai/client-sdk-react/dist/embed/widget.umd.js"
+  async
+  type="text/javascript">
+</script>
+
 </body>
 </html>
