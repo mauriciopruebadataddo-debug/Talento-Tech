@@ -610,7 +610,7 @@ img {
 /* --- CHATBOT --- */
 .chatbot-wrapper {
     position: fixed;
-    bottom: 30px;
+    bottom: 90px;
     right: 30px;
     z-index: 9999;
 }
@@ -772,12 +772,3 @@ iframe[src*="chatbase"] {
     position: fixed !important;
 }
 
-/* Vapi en medio */
-vapi-widget {
-    z-index: 100 !important;
-}
-
-/* Tu chatbot abajo */
-.chatbot-wrapper {
-    z-index: 10 !important;
-}
