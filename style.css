@@ -613,6 +613,7 @@ img {
     bottom: 90px;
     right: 30px;
     z-index: 9999;
+    max-height: 80vh
 }
 
 .chatbot-trigger {
@@ -765,10 +766,5 @@ img {
 .fade-in-up.visible {
     opacity: 1;
     transform: translateY(0);
-}
-/* Chatbase arriba de todos */
-iframe[src*="chatbase"] {
-    z-index: 99999 !important;
-    position: fixed !important;
-}
+
 
