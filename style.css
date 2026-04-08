@@ -766,3 +766,18 @@ img {
     opacity: 1;
     transform: translateY(0);
 }
+/* Chatbase arriba de todos */
+iframe[src*="chatbase"] {
+    z-index: 99999 !important;
+    position: fixed !important;
+}
+
+/* Vapi en medio */
+vapi-widget {
+    z-index: 100 !important;
+}
+
+/* Tu chatbot abajo */
+.chatbot-wrapper {
+    z-index: 10 !important;
+}
