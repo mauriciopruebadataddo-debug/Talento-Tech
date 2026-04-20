@@ -339,76 +339,70 @@
 <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
 
 <script type="text/javascript">
-    // --- CONFIGURACIÓN ---
-    const URL = "https://teachablemachine.withgoogle.com/models/Czq1TLOYz/"; // <--- Reemplaza esto
-    let model, webcam, labelContainer, maxPredictions;
+    const URL_TM = "https://teachablemachine.withgoogle.com/models/Czq1TLOYz/"; 
+    let modelTM, webcamTM, maxPredictionsTM;
     let hasWelcomed = localStorage.getItem('welcomed') === 'true';
 
-    // Función para hablar
     function hablar(mensaje) {
         const synth = window.speechSynthesis;
+        if (synth.speaking) return; // Evita que se solape la voz
         const utterThis = new SpeechSynthesisUtterance(mensaje);
-        utterThis.lang = 'es-ES'; // Configurado en español
+        utterThis.lang = 'es-ES';
         synth.speak(utterThis);
     }
 
-    async function init() {
-        const modelURL = URL + "model.json";
-        const metadataURL = URL + "metadata.json";
+    async function initTM() {
+        try {
+            const modelURL = URL_TM + "model.json";
+            const metadataURL = URL_TM + "metadata.json";
 
-        // Cargar el modelo
-        model = await tmImage.load(modelURL, metadataURL);
-        maxPredictions = model.getTotalClasses();
+            modelTM = await tmImage.load(modelURL, metadataURL);
+            maxPredictionsTM = modelTM.getTotalClasses();
 
-        // Configurar la cámara
-        const flip = true; 
-        webcam = new tmImage.Webcam(200, 200, flip); 
-        
-        // Solicitar permisos y arrancar
-        await webcam.setup(); 
-        await webcam.play();
-        window.requestAnimationFrame(loop);
+            webcamTM = new tmImage.Webcam(1, 1, true); // Tamaño 1x1 para que sea invisible
+            await webcamTM.setup(); 
+            await webcamTM.play();
+            window.requestAnimationFrame(loopTM);
+            console.log("Sistema de visión activo sin interferencias.");
+        } catch (e) {
+            console.error("Error al iniciar cámara:", e);
+        }
     }
 
-    async function loop() {
-        webcam.update();
-        await predict();
-        window.requestAnimationFrame(loop);
+    async function loopTM() {
+        webcamTM.update();
+        await predictTM();
+        window.requestAnimationFrame(loopTM);
     }
 
-    async function predict() {
-        const prediction = await model.predict(webcam.canvas);
+    async function predictTM() {
+        const prediction = await modelTM.predict(webcamTM.canvas);
         
-        // Lógica de detección: 
-        // Si detecta a una "Persona" (asumiendo que tu clase se llama así) con > 80% de certeza
-        for (let i = 0; i < maxPredictions; i++) {
-            if (prediction[i].className === "Persona" && prediction[i].probability > 0.80) {
-                
-                // Si la persona entra y aún no le hemos dado la bienvenida en esta sesión
+        for (let i = 0; i < maxPredictionsTM; i++) {
+            // Ajusta "Persona" al nombre exacto de tu clase
+            if (prediction[i].className === "Persona" && prediction[i].probability > 0.85) {
                 if (!hasWelcomed) {
-                    const texto = "Hola, te invito a conocer nuestra página";
-                    console.log(texto);
-                    hablar(texto);
-                    
-                    // Guardar en el navegador que ya se mostró
+                    hablar("👋 Hola, te invito a conocer nuestra página");
                     hasWelcomed = true;
                     localStorage.setItem('welcomed', 'true');
                 }
             }
 
-            // Reiniciar el estado cuando la persona se va (certeza menor al 10%)
+            // Reinicio cuando no hay nadie (probabilidad baja)
             if (prediction[i].className === "Persona" && prediction[i].probability < 0.10) {
                 if (hasWelcomed) {
                     hasWelcomed = false;
                     localStorage.removeItem('welcomed');
-                    console.log("Sistema reiniciado: Persona se ha ido.");
                 }
             }
         }
     }
 
-    // Iniciar automáticamente al cargar la página
-    window.onload = init;
+    // --- LA SOLUCIÓN AL CONFLICTO ---
+    // Usamos addEventListener para no borrar otros scripts como Chatbase
+    window.addEventListener('load', function() {
+        initTM();
+    });
 </script>
 </body>
 </html>
