@@ -244,3 +244,59 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 });
+const URL = "https://teachablemachine.withgoogle.com/models/Czq1TLOYz/";
+
+let model, webcam, maxPredictions;
+let yaSaludo = false;
+
+async function init() {
+    const modelURL = URL + "model.json";
+    const metadataURL = URL + "metadata.json";
+
+    model = await tmImage.load(modelURL, metadataURL);
+    maxPredictions = model.getTotalClasses();
+
+    webcam = new tmImage.Webcam(300, 300, true);
+    await webcam.setup();
+    await webcam.play();
+    window.requestAnimationFrame(loop);
+
+    document.getElementById("webcam-container").appendChild(webcam.canvas);
+}
+
+async function loop() {
+    webcam.update();
+    await predict();
+    window.requestAnimationFrame(loop);
+}
+
+async function predict() {
+    const prediction = await model.predict(webcam.canvas);
+
+    let personaDetectada = false;
+
+    for (let i = 0; i < prediction.length; i++) {
+        if (prediction[i].className === "Persona" && prediction[i].probability > 0.8) {
+            personaDetectada = true;
+        }
+    }
+
+    const mensaje = document.getElementById("mensaje");
+
+    if (personaDetectada && !yaSaludo) {
+        const texto = "Hola, te invito a conocer nuestra página";
+
+        mensaje.innerHTML = "👋 " + texto;
+
+        // 🔊 VOZ
+        const voz = new SpeechSynthesisUtterance(texto);
+        voz.lang = "es-CO";
+        speechSynthesis.speak(voz);
+
+        yaSaludo = true;
+
+    } else if (!personaDetectada) {
+        mensaje.innerHTML = "";
+        yaSaludo = false;
+    }
+}
