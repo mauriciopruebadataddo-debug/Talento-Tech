@@ -373,11 +373,8 @@
     async function loop() {
         webcam.update();
         await predict();
-        
-        setTimeout(() => {
         window.requestAnimationFrame(loop);
-    }, 100); // reduce carga del navegador
-
+    
     }
 
     async function predict() {
