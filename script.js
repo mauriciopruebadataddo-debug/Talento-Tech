@@ -243,5 +243,106 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    /* =========================================
+       7. Teachable Machine Integration
+       ========================================= */
+    const TM_URL = "https://teachablemachine.withgoogle.com/models/Czq1TLOYz/";
+    let tmModel, webcam, maxPredictions;
+    let isPersonPresent = false;
+    let isSpeaking = false;
+
+    async function initTeachableMachine() {
+        try {
+            const modelURL = TM_URL + "model.json";
+            const metadataURL = TM_URL + "metadata.json";
+
+            // Cargar el modelo
+            tmModel = await tmImage.load(modelURL, metadataURL);
+            maxPredictions = tmModel.getTotalClasses();
+
+            // Configurar la webcam
+            const flip = true; 
+            webcam = new tmImage.Webcam(200, 200, flip); 
+            await webcam.setup(); // Solicitar acceso a la camara
+            await webcam.play();
+            window.requestAnimationFrame(tmLoop);
+
+            // Agregar el canvas al contenedor oculto (para que no tape chatbots)
+            const webcamContainer = document.getElementById("webcam-container");
+            if (webcamContainer) {
+                webcamContainer.appendChild(webcam.canvas);
+            }
+        } catch (error) {
+            console.error("Error al iniciar Teachable Machine:", error);
+        }
+    }
+
+    async function tmLoop() {
+        webcam.update(); 
+        await tmPredict();
+        window.requestAnimationFrame(tmLoop);
+    }
+
+    async function tmPredict() {
+        const prediction = await tmModel.predict(webcam.canvas);
+        
+        let personDetected = false;
+        
+        // Verificamos las predicciones.
+        // Si hay una clase llamada "Persona" (o el indice 0 suele ser la clase positiva).
+        for (let i = 0; i < maxPredictions; i++) {
+            // Asumimos que la detección principal (Clase 1) es la persona. 
+            // Buscamos si la probabilidad es alta.
+            if (prediction[i].className.toLowerCase().includes("persona") || prediction[i].className.toLowerCase().includes("person") || prediction[i].className.includes("Class 1")) {
+                if (prediction[i].probability > 0.8) {
+                    personDetected = true;
+                }
+            }
+        }
+
+        // Fallback: Si no tiene un nombre descriptivo, asumimos que la clase 0 es la Persona
+        if (!prediction.some(p => p.className.toLowerCase().includes("person") || p.className.toLowerCase().includes("persona"))) {
+            if (prediction[0] && prediction[0].probability > 0.8) {
+                personDetected = true;
+            }
+        }
+
+        if (personDetected) {
+            if (!isPersonPresent) {
+                isPersonPresent = true;
+                hablar("Bienvenido a talento tech: construye tu camino en el mundo digital.");
+            }
+        } else {
+            // Si la probabilidad baja, consideramos que se fue y reiniciamos el estado
+            isPersonPresent = false;
+        }
+    }
+
+    function hablar(texto) {
+        if ('speechSynthesis' in window && !isSpeaking) {
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(texto);
+            utterance.lang = 'es-ES';
+            
+            utterance.onstart = () => { isSpeaking = true; };
+            utterance.onend = () => { isSpeaking = false; };
+            utterance.onerror = () => { isSpeaking = false; };
+
+            window.speechSynthesis.speak(utterance);
+        }
+    }
+
+    // Iniciar automáticamente si tmImage está disponible
+    if (typeof tmImage !== 'undefined') {
+        initTeachableMachine();
+    } else {
+        // En caso de que el script tarde en cargar
+        window.addEventListener('load', () => {
+            if (typeof tmImage !== 'undefined') {
+                initTeachableMachine();
+            }
+        });
+    }
+
 });
 
